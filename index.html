@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spotify Playlist Sorter</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 2em;
+    }
+    button, select {
+      padding: 0.5em;
+      margin-top: 1em;
+    }
+  </style>
+</head>
+<body>
+  <h1>Spotify Playlist Sorter</h1>
+  <button id="login">Log in with Spotify</button>
+  <div id="app" style="display:none">
+    <h2>Select a playlist</h2>
+    <select id="playlistSelect"></select>
+    <br>
+    <button id="sortButton">Sort Alphabetically</button>
+    <p id="status"></p>
+  </div>
+
+  <script>
+    const CLIENT_ID = 'YOUR_CLIENT_ID';
+    const REDIRECT_URI = window.location.origin + window.location.pathname; // GitHub Pages-safe
+    const SCOPES = 'playlist-read-private playlist-modify-private playlist-modify-public';
+
+    function getAccessTokenFromUrl() {
+      const hash = window.location.hash;
+      if (!hash) return null;
+      const params = new URLSearchParams(hash.slice(1));
+      return params.get('access_token');
+    }
+
+    function redirectToSpotifyAuth() {
+      const authUrl = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}`;
+      window.location.href = authUrl;
+    }
+
+    const accessToken = getAccessTokenFromUrl();
+
+    document.getElementById('login').onclick = redirectToSpotifyAuth;
+
+    if (accessToken) {
+      document.getElementById('login').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+
+      const headers = { Authorization: 'Bearer ' + accessToken };
+
+      fetch('https://api.spotify.com/v1/me/playlists?limit=50', { headers })
+        .then(res => res.json())
+        .then(data => {
+          const select = document.getElementById('playlistSelect');
+          data.items.forEach(playlist => {
+            const opt = document.createElement('option');
+            opt.value = playlist.id;
+            opt.textContent = playlist.name;
+            select.appendChild(opt);
+          });
+        });
+
+      document.getElementById('sortButton').onclick = async () => {
+        const playlistId = document.getElementById('playlistSelect').value;
+        const status = document.getElementById('status');
+        status.textContent = 'Fetching tracks...';
+
+        let tracks = [];
+        let url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100`;
+
+        while (url) {
+          const res = await fetch(url, { headers });
+          const data = await res.json();
+          tracks = tracks.concat(data.items);
+          url = data.next;
+        }
+
+        status.textContent = `Fetched ${tracks.length} tracks. Sorting...`;
+        const sorted = tracks.slice().sort((a, b) => {
+          const nameA = a.track.name.toLowerCase();
+          const nameB = b.track.name.toLowerCase();
+          return nameA.localeCompare(nameB);
+        });
+
+        const uris = sorted.map(t => t.track.uri);
+
+        status.textContent = 'Creating new playlist...';
+        const me = await fetch('https://api.spotify.com/v1/me', { headers }).then(res => res.json());
+        const newPlaylist = await fetch(`https://api.spotify.com/v1/users/${me.id}/playlists`, {
+          method: 'POST',
+          headers: { ...headers, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: 'Sorted Playlist', public: false })
+        }).then(res => res.json());
+
+        // Add songs in batches of 100
+        for (let i = 0; i < uris.length; i += 100) {
+          await fetch(`https://api.spotify.com/v1/playlists/${newPlaylist.id}/tracks`, {
+            method: 'POST',
+            headers: { ...headers, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uris: uris.slice(i, i + 100) })
+          });
+        }
+
+        status.textContent = `Done! New playlist created: ${newPlaylist.name}`;
+      }
+    }
+  </script>
+</body>
+</html>
