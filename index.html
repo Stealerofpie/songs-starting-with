@@ -12,11 +12,14 @@
     <label>Select playlist:</label>
     <select id="playlist-select"></select>
     <br/><br/>
+    <button id="filter-btn">Create filtered playlist</button>
+    <div id="status"></div>
+  </div>
+
+  <div id="temp" style="display: none">
     <label>Enter starting letter (e.g. "Q"):</label>
     <input type="text" id="letter-input" maxlength="1" />
     <br/><br/>
-    <button id="filter-btn">Create filtered playlist</button>
-    <div id="status"></div>
   </div>
 
   <script>
@@ -158,7 +161,7 @@
         uniqueArtists.sort();
 
         // Add each artist on a new line
-        status.innerHTML = `${uniqueArtists.length} unique artists found, listed alphabetically:`;
+        status.innerHTML = `<br><b>${uniqueArtists.length} unique artists found, listed alphabetically:</b><br>`;
         uniqueArtists.forEach(artist => status.innerHTML += artist + "<br>");
       };
     }
