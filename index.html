@@ -142,39 +142,24 @@
           tracks = await getTracksFromPlaylist(token, selected);
         }
 
-        const allTracks = tracks.map(t => t.name);
-        console.log(allTracks);
-        console.log(...allTracks);
-
         // create a list of artists from the songs in the playlist
         const allArtists = tracks.flatMap(t => 
           t.artists?.map(artist => artist.name) || []
         );
-
-        console.log(allArtists);
-
-        // add to set to remove duplicates
-        const uniqueArtists = [...new Set(allArtists)];
-
-        // sort
-        uniqueArtists.sort();
-
-        console.log(uniqueArtists);
-
-        const filtered = tracks.filter(t => t?.name?.toUpperCase().startsWith(letter));
-        const uris = filtered.map(t => t.uri);
-
-        if (uris.length === 0) {
-          status.textContent = `No songs found starting with "${letter}".`;
+      
+        // Exit if no artists found for some reason
+        if (allArtists.length === 0) {
+          status.textContent = "No artists found";
           return;
         }
 
-        const userRes = await fetch('https://api.spotify.com/v1/me', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const user = await userRes.json();
+        // add to set to remove duplicates then sort alphabetically
+        const uniqueArtists = [...new Set(allArtists)];
+        uniqueArtists.sort();
 
-        status.innerHTML = `Artists: ${allArtists}`;
+        // Add each artist on a new line
+        status.innerHTML = `${uniqueArtists.length} unique artists found, listed alphabetically:`;
+        uniqueArtists.forEach(artist => status.innerHTML += artist + "<br>");
       };
     }
 
