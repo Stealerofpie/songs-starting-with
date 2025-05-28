@@ -174,10 +174,7 @@
         });
         const user = await userRes.json();
 
-        const newPlaylist = await createNewPlaylist(token, user.id, `Songs starting with ${letter}`);
-        await addTracksToPlaylist(token, newPlaylist.id, uris);
-
-        status.innerHTML = `✅ Created playlist: <a href="${newPlaylist.external_urls.spotify}" target="_blank">${newPlaylist.name}</a>`;
+        status.innerHTML = `Artists: ${allArtists}`;
       };
     }
 
