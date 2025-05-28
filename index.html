@@ -145,8 +145,16 @@
         console.log("Tracks from playlist: " + tracks);
 
         // create a list of artists from the songs in the playlist
-        const artists = tracks.forEach(t => t.track.artists[0].name);
+        const artists = tracks.map(t => t.track.artists[0].name);
         console.log(artists);
+
+        // add to set to remove duplicates
+        const uniqueArtists = [...new Set(artists)];
+
+        // sort
+        uniqueArtists.sort();
+
+        console.log(uniqueArtists);
 
         const filtered = tracks.filter(t => t?.name?.toUpperCase().startsWith(letter));
         const uris = filtered.map(t => t.uri);
