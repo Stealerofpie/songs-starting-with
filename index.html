@@ -142,14 +142,13 @@
           tracks = await getTracksFromPlaylist(token, selected);
         }
 
-        console.log("Tracks from playlist: " + tracks);
-
         // create a list of artists from the songs in the playlist
-        const artists = tracks.map(t => t.track.artists[0].name);
-        console.log(artists);
+        const allArtists = tracks.flatMap(t => 
+          t.track?.artists?.map(artist => artist.name) || []
+        );console.log(artists);
 
         // add to set to remove duplicates
-        const uniqueArtists = [...new Set(artists)];
+        const uniqueArtists = [...new Set(allArtists)];
 
         // sort
         uniqueArtists.sort();
