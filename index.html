@@ -142,6 +142,10 @@
           tracks = await getTracksFromPlaylist(token, selected);
         }
 
+        const allTracks = tracks.map(t => t.track.name);
+        console.log(allTracks);
+        console.log(...allTracks);
+
         // create a list of artists from the songs in the playlist
         const allArtists = tracks.flatMap(t => 
           t.track?.artists?.map(artist => artist.name) || []
