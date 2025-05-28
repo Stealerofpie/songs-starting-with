@@ -142,7 +142,7 @@
           tracks = await getTracksFromPlaylist(token, selected);
         }
 
-        const allTracks = tracks.map(t => t.track.name);
+        const allTracks = tracks.map(t => t.name);
         console.log(allTracks);
         console.log(...allTracks);
 
