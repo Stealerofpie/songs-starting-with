@@ -148,7 +148,7 @@
 
         // create a list of artists from the songs in the playlist
         const allArtists = tracks.flatMap(t => 
-          t.track?.artists?.map(artist => artist.name) || []
+          t.artists?.map(artist => artist.name) || []
         );
 
         console.log(allArtists);
