@@ -142,10 +142,6 @@
           tracks = await getTracksFromPlaylist(token, selected);
         }
 
-        console.log("Tracks from playlist: " + tracks);
-
-        //const artists = tracks.sort(t => t.artists)
-
         const filtered = tracks.filter(t => t?.name?.toUpperCase().startsWith(letter));
         const uris = filtered.map(t => t.uri);
 
